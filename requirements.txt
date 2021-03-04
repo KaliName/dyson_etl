@@ -1,0 +1,13 @@
+pytest
+sqlAlchemy
+pandas
+psycopg2-binary
+pymongo
+numpy
+psycopg2
+pymongo
+sqlalchemy
+mysql-connector
+
+# specify versions...
+xlrd >= 1.2.0

@@ -1,0 +1,74 @@
+version: '3.7'
+services:
+
+    postgres:
+        image: postgres:9.6
+        ports:
+            - "5432:5432"
+        environment:
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+        logging:
+            options:
+                max-size: 10m
+                max-file: "3"
+
+    webserver:
+        image: puckel/docker-airflow:1.10.9
+        restart: always
+        depends_on:
+            - postgres
+        environment:
+            - LOAD_EX=n
+            - EXECUTOR=Local
+        logging:
+            options:
+                max-size: 10m
+                max-file: "3"
+        volumes:
+            - ./dags:/usr/local/airflow/dags
+            - ./data:/usr/local/airflow/data
+            - ./src:/usr/local/airflow/src
+            - ./requirements.txt:/usr/local/airflow/requirements.txt
+            # - ./plugins:/usr/local/airflow/plugins
+        ports:
+            - "8080:8080"
+        command: webserver
+        healthcheck:
+            test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+            interval: 30s
+            timeout: 30s
+            retries: 3
+    
+    dbMysql:
+        image: mysql:8.0.3
+        restart: always
+        ports:
+            - 3306:3306
+        environment:
+            MYSQL_ROOT_PASSWORD: pass
+            MYSQL_DATABASE: dyson_etl           
+    admin:
+        image: adminer
+        restart: always
+        depends_on: 
+            - dbMysql
+        ports:
+            - 8082:8080
+            
+
+    mongo:
+        image: mongo
+        restart: always
+        ports:
+            - 27017:27017
+    
+    mongo-express:
+        image: mongo-express
+        ports:
+            - 8081:8081
+        environment:
+            ME_CONFIG_MONGODB_ADMINUSERNAME: root
+            ME_CONFIG_MONGODB_ADMINPASSWORD: example
+    
